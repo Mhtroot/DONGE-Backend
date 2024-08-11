@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model users {
+  id        Int      @id @default(autoincrement())
+  name      String
+  phone     String   @unique
+  owes      BigInt   @default(0)
+  debts     BigInt   @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cards          cards[]
+  groups         groups[]
+  groupMembers   groupMembers[]
+  groupRequest   groupRequest[]
+  payDuesDebts   payDues[]      @relation("payDuesDebts")
+  payDuesCredits payDues[]      @relation("payDuesCredits")
+}
+
+model cards {
+  id      String @id @default(uuid())
+  cardPan String @unique
+
+  userId Int
+  user   users @relation(fields: [userId], references: [id])
+}
+
+model groups {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  userId Int
+  user   users @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  groupMembers groupMembers[]
+  groupRequest groupRequest[]
+}
+
+model groupMembers {
+  id Int @id @default(autoincrement())
+
+  userId Int
+  user   users @relation(fields: [userId], references: [id])
+
+  groupId Int
+  group   groups @relation(fields: [groupId], references: [id])
+
+  isAdmin  Boolean
+  joinedAt DateTime @default(now())
+}
+
+model groupRequest {
+  id String @id @default(uuid())
+
+  groupId Int
+  group   groups @relation(fields: [groupId], references: [id])
+
+  userId Int
+  user   users @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model payDues {
+  id Int @id @default(autoincrement())
+
+  debtorId   Int
+  debtorUser users @relation("payDuesDebts", fields: [debtorId], references: [id])
+
+  creditorId   Int
+  creditorUser users @relation("payDuesCredits", fields: [creditorId], references: [id])
+
+  amount      BigInt
+  description String
+}
