@@ -11,6 +11,7 @@ model users {
   id        Int      @id @default(autoincrement())
   name      String
   phone     String   @unique
+  email     String?  @unique
   owes      BigInt   @default(0)
   debts     BigInt   @default(0)
   createdAt DateTime @default(now())
@@ -20,8 +21,9 @@ model users {
   groups         groups[]
   groupMembers   groupMembers[]
   groupRequest   groupRequest[]
-  payDuesDebts   payDues[]      @relation("payDuesDebts")
-  payDuesCredits payDues[]      @relation("payDuesCredits")
+  payDuesDebts   payDues[]       @relation("payDuesDebts")
+  payDuesCredits payDues[]       @relation("payDuesCredits")
+  notifications  notifications[]
 }
 
 model cards {
@@ -36,8 +38,8 @@ model groups {
   id   Int    @id @default(autoincrement())
   name String
 
-  userId Int
-  user   users @relation(fields: [userId], references: [id])
+  userId Int?
+  user   users? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -49,11 +51,11 @@ model groups {
 model groupMembers {
   id Int @id @default(autoincrement())
 
-  userId Int
-  user   users @relation(fields: [userId], references: [id])
+  userId Int?
+  user   users? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   groupId Int
-  group   groups @relation(fields: [groupId], references: [id])
+  group   groups @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
   isAdmin  Boolean
   joinedAt DateTime @default(now())
@@ -63,23 +65,37 @@ model groupRequest {
   id String @id @default(uuid())
 
   groupId Int
-  group   groups @relation(fields: [groupId], references: [id])
+  group   groups @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
-  userId Int
-  user   users @relation(fields: [userId], references: [id])
+  userId Int?
+  user   users? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
+  status    String   @default("pending")
   createdAt DateTime @default(now())
 }
 
 model payDues {
   id Int @id @default(autoincrement())
 
-  debtorId   Int
-  debtorUser users @relation("payDuesDebts", fields: [debtorId], references: [id])
+  debtorId   Int?
+  debtorUser users? @relation("payDuesDebts", fields: [debtorId], references: [id], onDelete: SetNull)
 
-  creditorId   Int
-  creditorUser users @relation("payDuesCredits", fields: [creditorId], references: [id])
+  creditorId   Int?
+  creditorUser users? @relation("payDuesCredits", fields: [creditorId], references: [id], onDelete: SetNull)
 
-  amount      BigInt
+  amount      String
+  currency    String
   description String
+}
+
+model notifications {
+  id Int @id @default(autoincrement())
+
+  userId Int
+  user   users @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  message String
+
+  createdAt DateTime @default(now())
+  read      Boolean  @default(false)
 }
