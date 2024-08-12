@@ -2,11 +2,24 @@ import express from "express";
 import {protectUser} from "../../middlewares/auth";
 import {body, validationResult} from "express-validator";
 import {UserAuthenticatedReq} from "../../interfaces/AuthenticatedRequest";
-import {createCard} from "../../services/client/userDbServices";
+import {createCard, getAllCards} from "../../services/client/userDbServices";
 
 const router = express.Router();
 
-router.post("/create", protectUser, body('cardPan').isString(), async (req: UserAuthenticatedReq, res) => {
+router.get("/", protectUser, async (req: UserAuthenticatedReq, res) => {
+    const error = validationResult(req)
+    if (!error.isEmpty())
+        return res.status(400).json({ error: error.array() });
+
+    const result = await getAllCards(req.user.id);
+
+    if (!result)
+        return res.status(400).json(result);
+
+    return res.json(result);
+});
+
+router.post("/create", protectUser, body('cardPan').isString(), body('cardName').isString(), async (req: UserAuthenticatedReq, res) => {
    const error = validationResult(req);
    if (!error.isEmpty())
        return res.status(400).json({ error: error.array() });
@@ -21,14 +34,14 @@ router.post("/create", protectUser, body('cardPan').isString(), async (req: User
    const data = {
        userId: req.user.id,
        cardPan: pan.toString(),
+       cardName: req.body.cardName,
    }
 
-   const result = await createCard(data.cardPan, data.userId);
+   const result = await createCard(data.cardPan, data.userId, data.cardName);
 
    if (!result.success)
        return res.status(400).json(result);
 
    return res.json(result);
 });
-
 export default router;

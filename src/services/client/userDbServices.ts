@@ -196,7 +196,7 @@ export const verifyCode = async (phone: string, code: string) => {
     }
 };
 
-export const createCard = async (cardPan: string, userId: number) => {
+export const createCard = async (cardPan: string, userId: number, cardName: string) => {
     try {
         const user = await db.users.findUnique({
             where: {
@@ -227,6 +227,7 @@ export const createCard = async (cardPan: string, userId: number) => {
             data: {
                 userId: userId,
                 cardPan: cardPan,
+                cardName: cardName,
             },
         });
 
@@ -243,6 +244,54 @@ export const createCard = async (cardPan: string, userId: number) => {
         return {
             success: false,
             message: "متاسفانه نتونستیم شماره کارتتو داشته باشیم ❌😔",
+        }
+    }
+}
+
+export const getAllCards = async (userId: number) => {
+    try {
+        const user = await db.users.findFirst({
+            where: {
+                id: userId,
+            },
+        });
+
+        if (!user) {
+            return {
+                success: false,
+                message: "متاسفانه نتونستیم اطلاعاتت رو دریافت کنیم 😔💔",
+            }
+        }
+
+        const cards = await db.cards.findMany({
+            where: {
+                userId: userId,
+            },
+            select: {
+                cardPan: true,
+                cardName: true,
+            },
+        });
+
+        if (!cards || cards.length === 0) {
+            return {
+                success: false,
+                message: "هیچ کارتی ثبت نکردی 💔",
+            }
+        }
+
+        return {
+            success: true,
+            cards: cards
+        }
+    } catch (error) {
+        logger.error(error, {
+            section: "getAllCards",
+        });
+
+        return {
+            success: false,
+            message: "متاسفانه نتونستیم به کارت هات دسترسی پیدا کنیم 😔💸",
         }
     }
 }
