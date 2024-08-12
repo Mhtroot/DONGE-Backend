@@ -29,11 +29,13 @@ model users {
 }
 
 model cards {
-  id      String @id @default(uuid())
-  cardPan String @unique
+  id       String @id @default(uuid())
+  cardPan  String @unique
+  cardName String
 
-  userId Int
-  user   users @relation(fields: [userId], references: [id])
+  userId  Int
+  user    users     @relation(fields: [userId], references: [id])
+  payDues payDues[]
 }
 
 model groups {
@@ -85,8 +87,11 @@ model payDues {
   creditorId   Int?
   creditorUser users? @relation("payDuesCredits", fields: [creditorId], references: [id], onDelete: SetNull)
 
-  amount      String
-  currency    String
+  amount   String
+  currency String
+
+  cardId      String?
+  card        cards?  @relation(fields: [cardId], references: [id])
   description String
 }
 
