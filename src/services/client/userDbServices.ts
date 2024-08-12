@@ -195,3 +195,54 @@ export const verifyCode = async (phone: string, code: string) => {
         };
     }
 };
+
+export const createCard = async (cardPan: string, userId: number) => {
+    try {
+        const user = await db.users.findUnique({
+            where: {
+                id: userId,
+            },
+        });
+
+        if (!user) {
+            return {
+                success: false,
+                message: "کاربر یافت نشد ❌",
+            }
+        }
+
+        const card = await db.cards.findUnique({
+            where: {
+                cardPan: cardPan,
+            }
+        });
+        if (card) {
+            return {
+                success: false,
+                message: "این شماره کارت قبلا وارد شده ❌😔",
+            }
+        }
+
+        const newCard = await db.cards.create({
+            data: {
+                userId: userId,
+                cardPan: cardPan,
+            },
+        });
+
+        return {
+            success: true,
+            message: "شماره کارتت با موفقیت ثبت شد ✅😎\nازین ببعد میتونی به دوستات بگی دنگشونو با دنگ بدن😁",
+            newCard,
+        }
+    } catch (error) {
+        logger.error(error, {
+            section: "addNewCard",
+        });
+
+        return {
+            success: false,
+            message: "متاسفانه نتونستیم شماره کارتتو داشته باشیم ❌😔",
+        }
+    }
+}
