@@ -8,22 +8,24 @@ datasource db {
 }
 
 model users {
-  id        Int      @id @default(autoincrement())
-  name      String
-  phone     String   @unique
-  email     String?  @unique
-  owes      BigInt   @default(0)
-  debts     BigInt   @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         Int      @id @default(autoincrement())
+  name       String?
+  phone      String   @unique
+  email      String?  @unique
+  owes       BigInt   @default(0)
+  debts      BigInt   @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  isVerified Boolean  @default(false)
 
-  cards          cards[]
-  groups         groups[]
-  groupMembers   groupMembers[]
-  groupRequest   groupRequest[]
-  payDuesDebts   payDues[]       @relation("payDuesDebts")
-  payDuesCredits payDues[]       @relation("payDuesCredits")
-  notifications  notifications[]
+  cards            cards[]
+  groups           groups[]
+  groupMembers     groupMembers[]
+  groupRequest     groupRequest[]
+  payDuesDebts     payDues[]          @relation("payDuesDebts")
+  payDuesCredits   payDues[]          @relation("payDuesCredits")
+  notifications    notifications[]
+  verificationCode verificationCode[]
 }
 
 model cards {
@@ -98,4 +100,15 @@ model notifications {
 
   createdAt DateTime @default(now())
   read      Boolean  @default(false)
+}
+
+model verificationCode {
+  id   String @id @default(uuid())
+  code String
+
+  userId Int
+  user   users @relation(fields: [userId], references: [id])
+
+  phone     String
+  expiredAt DateTime
 }

@@ -4,6 +4,7 @@ import fs from "fs";
 import path from "path";
 import swaggerUi from "swagger-ui-express";
 import session from "express-session";
+import userAuthRouters from "./routers/client/userAuthRouters";
 
 const app = express();
 
@@ -19,8 +20,10 @@ app.use(session({
 }));
 
 
+app.use("/user", userAuthRouters);
+
 const swaggerDocument = JSON.parse(fs.readFileSync(path.join(__dirname, 'swagger-output.json'), 'utf-8'));
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.get("/", async (req, res) => {
     res.send("Hello World");
