@@ -6,12 +6,6 @@ import {sendVerificationCode} from "../../core/sms";
 import {generateJwt} from "../../core/jwt";
 
 const router = express.Router();
-router.get("/check", async (req, res) => {
-    return res.json({
-        sucees: true,
-        message: "fucking works"
-    })
-})
 
 router.post("/phone", body('phone').isString(), async (req, res) => {
     const error = validationResult(req);
