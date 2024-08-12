@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 
 const SECRET = process.env.JWT_SECRET;
 
-export const generateJwt = async (userId: number) => {
+export const generateJwt = (userId: number) => {
     if (!userId)
         return
 
@@ -18,7 +18,7 @@ export const generateJwt = async (userId: number) => {
     return token;
 }
 
-export const generateAdminJwt = async (adminId: string) => {
+export const generateAdminJwt = (adminId: string) => {
     if (!adminId)
         return
 
@@ -34,7 +34,7 @@ export const generateAdminJwt = async (adminId: string) => {
     return token;
 }
 
-export const validateJwt = async (token: string) => {
+export const validateJwt = (token: string) => {
     try {
         const result = jwt.verify(token, SECRET);
 
@@ -44,7 +44,7 @@ export const validateJwt = async (token: string) => {
     }
 }
 
-export const validateAdminJwt = async (token: string) => {
+export const validateAdminJwt = (token: string) => {
     try {
         const result = jwt.verify(token, SECRET);
         return result as {id: string}
