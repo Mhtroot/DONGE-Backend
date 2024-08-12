@@ -36,7 +36,7 @@ export const protectUser = async (req: UserAuthenticatedReq, res: Response, next
     next();
 };
 
-export const protectUser = async (req: AdminAuthenticatedReq, res: Response, next: NextFunction) => {
+export const protectAdmin = async (req: AdminAuthenticatedReq, res: Response, next: NextFunction) => {
     const bearer = req.headers.authorization;
 
     if (!bearer)
@@ -58,7 +58,7 @@ export const protectUser = async (req: AdminAuthenticatedReq, res: Response, nex
                 message: "INVALID TOKEN❌"
             });
 
-        req.user = {
+        req.admin = {
             id: user.id,
         }
     } catch (error) {

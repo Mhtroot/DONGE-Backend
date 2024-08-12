@@ -26,7 +26,7 @@ export const generateAdminJwt = (adminId: string) => {
         id: adminId,
     };
 
-    const token = jwt.sign(payload, SECRET, {
+    const token = jwt.sign(payload, SECRET+SECRET, {
         algorithm: "HS256",
         expiresIn: "48h",
     });
@@ -46,7 +46,7 @@ export const validateJwt = (token: string) => {
 
 export const validateAdminJwt = (token: string) => {
     try {
-        const result = jwt.verify(token, SECRET);
+        const result = jwt.verify(token, SECRET+SECRET);
         return result as {id: string}
     } catch (error) {
         return null;
