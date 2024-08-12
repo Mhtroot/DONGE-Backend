@@ -2,7 +2,7 @@ import express from "express";
 import {protectUser} from "../../middlewares/auth";
 import {body, validationResult} from "express-validator";
 import {UserAuthenticatedReq} from "../../interfaces/AuthenticatedRequest";
-import {createCard, getAllCards} from "../../services/client/userDbServices";
+import {createCard, getAllCards, getCardByPan} from "../../services/client/userDbServices";
 
 const router = express.Router();
 
@@ -14,6 +14,26 @@ router.get("/", protectUser, async (req: UserAuthenticatedReq, res) => {
     const result = await getAllCards(req.user.id);
 
     if (!result)
+        return res.status(400).json(result);
+
+    return res.json(result);
+});
+
+router.get("/:cardPan", protectUser, async (req: UserAuthenticatedReq, res) => {
+    const data = {
+        userId: req.user.id,
+        cardPan: req.params.cardPan,
+    }
+
+    if (isNaN(Number(data.cardPan)) || data.cardPan.length !== 16)
+        return res.status(400).json({
+            success: false,
+            message: "لطفا شماره کارتت رو درست وارد کن 🤐❌",
+        });
+
+    const result = await getCardByPan(data.userId, data.cardPan);
+
+    if (!result.success)
         return res.status(400).json(result);
 
     return res.json(result);

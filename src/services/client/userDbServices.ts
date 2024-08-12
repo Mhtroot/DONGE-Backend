@@ -295,3 +295,71 @@ export const getAllCards = async (userId: number) => {
         }
     }
 }
+
+export const getCardByPan = async (userId: number, cardPan: string) => {
+    try {
+        const user = await db.users.findUnique({
+            where: {
+                id: userId,
+            },
+        });
+
+        if (!user) {
+            return {
+                success: false,
+                message: "متاسفانه نتونستیم اطلاعاتت رو دریافت کنیم 😔💔",
+            }
+        }
+
+        const card = await db.cards.findUnique({
+            where: {
+                cardPan: cardPan,
+                userId: userId,
+            }
+        });
+
+        if (!card) {
+            return {
+                success: false,
+                message: "همچین کارتی نداریم 😴❌",
+            }
+        }
+
+        const pays = await db.payDues.findMany({
+            where: {
+                cardId: card.id,
+            },
+        });
+
+        let debts = 0;
+        let credits = 0;
+
+        pays.forEach((pay) => {
+            const amount = Number(pay.amount);
+
+            if (pay.debtorId === userId)
+                debts += amount;
+            else if (pay.creditorId === userId)
+                credits += amount;
+        });
+
+        return {
+            success: true,
+            card: {
+                name: card.cardName,
+                cardPan,
+                debts,
+                credits,
+            }
+        }
+    } catch (error) {
+        logger.error(error, {
+            section: "getCardByPan",
+        });
+
+        return {
+            success: false,
+            message: "خطایی تو دریافت اطلاعات کارت رخ داد 🤐💳❌",
+        }
+    }
+}
