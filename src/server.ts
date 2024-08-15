@@ -23,6 +23,7 @@ app.use(session({
 
 app.use("/user", userAuthRouters);
 app.use("/user/card", userCardsRouters);
+app.use("/group", )
 
 const swaggerDocument = JSON.parse(fs.readFileSync(path.join(__dirname, 'swagger-output.json'), 'utf-8'));
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
