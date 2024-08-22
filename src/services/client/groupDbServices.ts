@@ -90,6 +90,67 @@ export const getAllGroups = async (userId: number) => {
     }
 }
 
+export const getGroupById = async (userId: number, groupId: number) => {
+    try {
+        const group = await db.groups.findUnique({
+            where: {
+                id: groupId,
+                userId,
+            }
+        });
+
+        if (!group) {
+            return {
+                success: false,
+                message: "چنین گروهی موجود نیست❌",
+            }
+        }
+
+        const members = await db.groupMembers.findMany({
+            where: {
+                groupId
+            },
+        });
+
+        let membersDetails = [];
+
+        for (const member of members) {
+            const user = await db.users.findFirst({
+                where: {
+                    id: member.userId,
+                },
+                select: {
+                    name: true,
+                    phone: true,
+                }
+            });
+
+            const data = {
+                user,
+                joinedAt: member.joinedAt,
+                isAdmin: member.isAdmin,
+            }
+
+            membersDetails.push(data);
+        }
+
+        return {
+            success: true,
+            group,
+            membersDetails,
+        }
+    } catch (error) {
+        logger.error(error, {
+            section: "getGroupById",
+        });
+
+        return {
+            success: false,
+            message: "خطا در دریافت اطلاعات گروه مورد نظر 😔❌",
+        }
+    }
+}
+
 export const addUserToGroup = async (groupId: number, userId: number) => {
     try {
         const user = await db.users.findUnique({
