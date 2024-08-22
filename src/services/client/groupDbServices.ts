@@ -190,7 +190,7 @@ export const addUserToGroup = async (groupId: number, userId: number) => {
     }
 }
 
-export const createAddMemeberRequest = async (groupId: number, userId: number) => {
+export const createAddMemberRequest = async (groupId: number, userId: number) => {
     try {
         const user = await db.users.findUnique({
             where: {
@@ -218,7 +218,7 @@ export const createAddMemeberRequest = async (groupId: number, userId: number) =
         }
     } catch (error) {
         logger.error(error, {
-            section: "createAddMemeberRequest",
+            section: "createAddMemberRequest",
         });
 
         return {
