@@ -255,6 +255,12 @@ export const userGetAllRequests = async (userId: number) => {
                 userId
             }
         });
+        if (groupRequests.length === 0) {
+            return {
+                success: true,
+                message: "هیچ درخواستی نداری 😔💔",
+            }
+        }
 
         return {
             success: true,
@@ -294,6 +300,13 @@ export const getRequestById = async (userId: number, reqId: string) => {
             }
         });
 
+        if (!request) {
+            return {
+                success: false,
+                message: "چنین درخواستی وجود نداره 🤐❌",
+            }
+        }
+
         return {
             success: true,
             groupReq: request,
@@ -322,6 +335,20 @@ export const updateGroupRequest = async (userId: number, reqId: string, status: 
             return {
                 success: false,
                 message: "چنین کاربری نداریم 😔❌",
+            }
+        }
+
+        const request = await db.groupRequest.findUnique({
+            where: {
+                userId,
+                id: reqId,
+            }
+        });
+
+        if (!request) {
+            return {
+                success: false,
+                message: "چنین درخواستی وجود نداره 🤐❌",
             }
         }
 
