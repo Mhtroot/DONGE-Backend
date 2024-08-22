@@ -56,6 +56,13 @@ export const getAllGroups = async (userId: number) => {
             }
         });
 
+        if (!groups.length) {
+            return {
+                success: true,
+                message: "هیچ گروهی نداری 💔",
+            }
+        }
+
         const groupsArray = [];
 
         for (const group of groups) {
