@@ -38,7 +38,7 @@ export const createGroup = async (name: string, userId: number) => {
         }
     } catch (error) {
         logger.error(error, {
-            section: "createNewGroup",
+            section: "createGroup",
         });
 
         return {
@@ -56,9 +56,27 @@ export const getAllGroups = async (userId: number) => {
             }
         });
 
+        const groupsArray = [];
+
+        for (const group of groups) {
+            const membersCount = await db.groupMembers.count({
+                where: {
+                    groupId: group.id,
+                }
+            });
+
+            const data = {
+                group: group,
+                membersCount: membersCount,
+            }
+
+            groupsArray.push(data);
+        }
+
+
         return {
             success: true,
-            groups,
+            groupsArray,
         }
     } catch (error) {
         logger.error(error, {
