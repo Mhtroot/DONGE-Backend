@@ -1,7 +1,12 @@
 import express from "express";
 import {protectUser} from "../../middlewares/auth";
 import {UserAuthenticatedReq} from "../../interfaces/AuthenticatedRequest";
-import {getRequestById, updateGroupRequest, userGetAllRequests} from "../../services/client/groupDbServices";
+import {
+    createAddMemberRequest,
+    getRequestById,
+    updateGroupRequest,
+    userGetAllRequests
+} from "../../services/client/groupDbServices";
 import {body, validationResult} from "express-validator";
 
 const router = express.Router();
@@ -25,6 +30,33 @@ router.get('/:id', protectUser, async (req:UserAuthenticatedReq, res) => {
    const reqId = req.params.id;
 
    const result = await getRequestById(userId, reqId);
+   if (!result.success)
+       return res.status(400).json(result);
+
+   return res.json(result);
+});
+
+router.post('/create/:groupId', protectUser, body('memberId').isString(), async (req:UserAuthenticatedReq, res) => {
+   const error = validationResult(req);
+   if (!error.isEmpty())
+       return res.status(400).json({error: error.array()});
+
+   const groupId = Number(req.params.groupId);
+   const memberId = Number(req.body.memberId);
+   if (isNaN(groupId))
+       return res.status(400).json({
+           success: false,
+           message: 'Invalid group ID',
+       });
+   if (isNaN(memberId))
+       return res.status(400).json({
+           success: false,
+           message: 'Invalid member ID',
+       });
+
+   const groupAdminId = req.user.id;
+
+   const result = await createAddMemberRequest(groupId, memberId, groupAdminId);
    if (!result.success)
        return res.status(400).json(result);
 
