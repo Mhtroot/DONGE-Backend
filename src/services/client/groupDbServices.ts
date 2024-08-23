@@ -197,8 +197,25 @@ export const addUserToGroup = async (groupId: number, userId: number) => {
     }
 }
 
-export const createAddMemberRequest = async (groupId: number, userId: number) => {
+export const createAddMemberRequest = async (groupId: number, userId: number, groupAdminId: number) => {
     try {
+        const isAdmin = await db.groupMembers.findFirst({
+            where: {
+                groupId,
+                userId: groupAdminId,
+            },
+            select: {
+                isAdmin: true
+            }
+        });
+
+        if (!isAdmin) {
+            return {
+                success: false,
+                message: "چون سرپرست گروه نیستی نمیتونیم بهت اجازه اینکارو بدیم 😔💔",
+            }
+        }
+
         const user = await db.users.findUnique({
             where: {
                 id: userId,
@@ -209,6 +226,22 @@ export const createAddMemberRequest = async (groupId: number, userId: number) =>
             return {
                 success: false,
                 message: "چنین کاربری نداریم 😔❌",
+            }
+        }
+
+        const req = await db.groupRequest.findMany({
+            where: {
+                groupId,
+                userId,
+            }
+        });
+
+        if (req[0]) {
+            if (req[0].status === 'pending') {
+                return {
+                    success: true,
+                    message: "درخواستت از قبل برای دوستت ارسال شده\nاگر میخوای دوباره بهش درخواست بدی باید درخواست قبلیت رو حذف کنی 😁",
+                }
             }
         }
 
