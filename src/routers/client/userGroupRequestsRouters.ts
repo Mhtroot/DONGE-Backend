@@ -3,7 +3,7 @@ import {protectUser} from "../../middlewares/auth";
 import {UserAuthenticatedReq} from "../../interfaces/AuthenticatedRequest";
 import {
     createAddMemberRequest,
-    getRequestById,
+    getRequestById, joinGroupByReq,
     updateGroupRequest,
     userGetAllRequests
 } from "../../services/client/groupDbServices";
@@ -63,21 +63,31 @@ router.post('/create/:groupId', protectUser, body('memberId').isString(), async 
    return res.json(result);
 });
 
-router.put('update-status/:id', protectUser, body('status').isString(), async (req:UserAuthenticatedReq, res) => {
+router.put('/update-status/:reqId', protectUser, body('status').isString(), async (req:UserAuthenticatedReq, res) => {
    const error = validationResult(req);
    if (!error.isEmpty())
        return res.status(400).json({error: error.array()});
 
    const status = req.body.status;
-   if (status !== 'rejected' || status === 'approved')
+   if (status !== 'rejected' || status !== 'approved')
        return res.status(400).json({
            success: false,
            message: "نوع وضعیت نادرست است ❌",
        });
 
-   const reqId = req.params.id;
+   const reqId = req.params.reqId;
 
    const result = await updateGroupRequest(req.user.id, reqId, status);
+   if (!result.success)
+       return res.status(400).json(result);
+
+   return res.json(result);
+});
+
+router.post('/join/:reqId', protectUser, async (req:UserAuthenticatedReq, res) => {
+   const reqId = req.params.reqId;
+
+   const result = await joinGroupByReq(req.user.id, reqId);
    if (!result.success)
        return res.status(400).json(result);
 
