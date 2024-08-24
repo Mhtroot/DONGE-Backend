@@ -197,7 +197,7 @@ export const addUserToGroup = async (groupId: number, userId: number) => {
     }
 }
 
-export const createAddMemberRequest = async (groupId: number, userId: number, groupAdminId: number) => {
+export const createAddMemberRequest = async (groupId: number, memberPhoneNumber: string, groupAdminId: number) => {
     try {
         const isAdmin = await db.groupMembers.findFirst({
             where: {
@@ -216,10 +216,10 @@ export const createAddMemberRequest = async (groupId: number, userId: number, gr
             }
         }
 
-        const user = await db.users.findUnique({
+        const user = await db.users.findFirst({
             where: {
-                id: userId,
-            }
+                phone: memberPhoneNumber,
+            },
         });
 
         if (!user) {
@@ -232,7 +232,7 @@ export const createAddMemberRequest = async (groupId: number, userId: number, gr
         const req = await db.groupRequest.findMany({
             where: {
                 groupId,
-                userId,
+                userId: user.id,
             }
         });
 
@@ -247,7 +247,7 @@ export const createAddMemberRequest = async (groupId: number, userId: number, gr
 
         await db.groupRequest.create({
             data: {
-                userId,
+                userId: user.id,
                 groupId,
             }
         });
