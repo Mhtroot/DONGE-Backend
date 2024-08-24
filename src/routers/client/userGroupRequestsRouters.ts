@@ -69,7 +69,7 @@ router.put('/update-status/:reqId', protectUser, body('status').isString(), asyn
        return res.status(400).json({error: error.array()});
 
    const status = req.body.status;
-   if (status !== 'rejected' || status !== 'approved')
+   if (status !== 'rejected' && status !== 'approved')
        return res.status(400).json({
            success: false,
            message: "نوع وضعیت نادرست است ❌",

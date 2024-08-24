@@ -35,6 +35,4 @@ app.get("/", async (req, res) => {
     res.send("Hello World");
 });
 
-//09010140447: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNzI0MzQ0ODIzLCJleHAiOjE3MjQ1MTc2MjN9.WHVgwlxlWJVZ3dDoXbt7XNKWUf2wpTDD6JAR1ufjWsU
-//09020140447: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNzI0MzQ4MzUzLCJleHAiOjE3MjQ1MjExNTN9.eRzkBr99purEiEu3Ulf0PTWJoO1bwJyct9bPtDkPoXY
 export default app;

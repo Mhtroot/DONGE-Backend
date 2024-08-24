@@ -426,7 +426,7 @@ export const joinGroupByReq = async (userId: number, reqId: string) => {
             }
         }
 
-        const request = await db.groupRequest.findUnique({
+        const request = await db.groupRequest.findMany({
             where: {
                 id: reqId,
             }
@@ -439,10 +439,10 @@ export const joinGroupByReq = async (userId: number, reqId: string) => {
             }
         }
 
-        if (request.status === 'approve') {
+        if (request[0].status === 'approved') {
             await db.groupMembers.create({
                 data: {
-                    groupId: request.groupId,
+                    groupId: request[0].groupId,
                     isAdmin: false,
                     userId,
                 }
