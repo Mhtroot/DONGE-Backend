@@ -2,8 +2,8 @@ import express from "express";
 import {protectUser} from "../../middlewares/auth";
 import {UserAuthenticatedReq} from "../../interfaces/AuthenticatedRequest";
 import {
-    createAddMemberRequest,
-    getRequestById, joinGroupByReq,
+    createAddMemberRequest, deleteRequest,
+    getRequestById, getSentRequests, joinGroupByReq,
     updateGroupRequest,
     userGetAllRequests
 } from "../../services/client/groupDbServices";
@@ -15,6 +15,16 @@ router.get('/', protectUser, async (req:UserAuthenticatedReq, res) => {
    const userId = req.user.id;
 
    const result = await userGetAllRequests(userId);
+   if (!result.success)
+       return res.status(400).json(result);
+
+   return res.json(result);
+});
+
+router.get('/sent', protectUser, async (req:UserAuthenticatedReq, res) => {
+   const userId = req.user.id;
+
+   const result = await getSentRequests(userId);
    if (!result.success)
        return res.status(400).json(result);
 
@@ -92,6 +102,16 @@ router.put('/update-status/:reqId', protectUser, body('status').isString(), asyn
         return res.status(400).json(result);
 
     return res.json(result);
+});
+
+router.delete('/:requestId', protectUser, async (req: UserAuthenticatedReq, res) => {
+   const reqId = req.params.requestId;
+
+   const result = await deleteRequest(reqId);
+   if (!result.success)
+       return res.status(400).json(result);
+
+   return res.json(result);
 });
 
 export default router;
