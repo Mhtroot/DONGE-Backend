@@ -294,10 +294,37 @@ export const userGetAllRequests = async (userId: number) => {
                 message: "هیچ درخواستی نداری 😔💔",
             }
         }
+        const data = [];
 
+        for (const groupReq of groupRequests) {
+            const groupDetails = await db.groups.findUnique({
+                where: {
+                    id: groupReq.groupId,
+                },
+                select: {
+                    name: true,
+                }
+            });
+
+            const adminData = await db.users.findUnique({
+                where: {
+                    id: groupReq.userId
+                },
+                select: {
+                    name: true,
+                    phone: true,
+                }
+            });
+
+            data.push({
+                groupName: groupDetails.name,
+                sender: adminData,
+                groupRequest: groupReq,
+            });
+        }
         return {
             success: true,
-            reqs: groupRequests,
+            data: data,
         }
     } catch (error) {
         logger.error(error, {
@@ -352,6 +379,67 @@ export const getRequestById = async (userId: number, reqId: string) => {
         return {
             success: false,
             message: "خطایی تو دریافت درخواست مورد نظر رخ داد 😔❌"
+        }
+    }
+}
+
+export const getSentRequests = async (userId: number) => {
+    try {
+        const user = await db.users.findUnique({
+            where: {
+                id: userId,
+            }
+        });
+
+        if (!user) {
+            return {
+                success: false,
+                message: "چنین کاربری نداریم 😔❌",
+            }
+        }
+
+        const groups = await db.groups.findMany({
+            where: {
+                userId: userId,
+            }
+        });
+
+        if (groups.length === 0) {
+            return {
+                success: false,
+                message: "هیچ گروهی نداری 🤐❌"
+            }
+        }
+
+        const groupRequestsData = [];
+
+        for (const group of groups) {
+            const sentGroupReqs = await db.groupRequest.findMany({
+                where: {
+                    groupId: group.id,
+                }
+            });
+
+            const data = {
+                groupDetails: group,
+                requests: sentGroupReqs,
+            }
+
+            groupRequestsData.push(data);
+        }
+
+        return {
+            success: true,
+            requests: groupRequestsData,
+        }
+    } catch (error) {
+        logger.error(error, {
+            section: "getSentRequests",
+        });
+
+        return {
+            success: false,
+            message: "خطا در دریافت درخواست های ارسال شده ❌",
         }
     }
 }
@@ -459,6 +547,11 @@ export const joinGroupByReq = async (userId: number, reqId: string) => {
                 message: "با موفقیت به گروه مورد نظر عضو شدی😎✅\nاز الان ببعد میتونی دنگاتو اونجا صاف کنی😁💳",
             }
         }
+
+        return {
+            success: false,
+            message: "خطا در عضویت گروه 🤐❌"
+        }
     } catch (error) {
         logger.error(error, {
             section: "joinGroupByReq"
@@ -467,6 +560,43 @@ export const joinGroupByReq = async (userId: number, reqId: string) => {
         return {
             success: false,
             message: "خطایی تو عضو شدن به گروه مورد نظر رخ داد 😔😔❌",
+        }
+    }
+}
+
+export const deleteRequest = async (requestId: string) => {
+    try {
+        const groupReq = await db.groupRequest.findUnique({
+            where: {
+                id: requestId,
+            },
+        });
+
+        if (!groupReq) {
+            return {
+                success: false,
+                message: "درخواست مورد نظر یافت نشد 😔💔",
+            }
+        }
+
+        await db.groupRequest.delete({
+            where: {
+                id: requestId,
+            },
+        });
+
+        return {
+            success: true,
+            message: "درخواست مورد نظر با موفقیت حذف 🗑✅\nهرموقع که دلت خواست بازم میتونی درخواست به دوستات بدی😁🎉",
+        }
+    } catch (error) {
+        logger.error(error, {
+            section: "deleteRequest",
+        });
+
+        return {
+            success: false,
+            message: "خطا در حذف درخواست 🤐❌"
         }
     }
 }
