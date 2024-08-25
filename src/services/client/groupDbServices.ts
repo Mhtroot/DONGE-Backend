@@ -1,7 +1,7 @@
 import db from "../db";
 import logger from "../../core/logger";
 
-export const createGroup = async (name: string, userId: number) => {
+export const createGroup = async (name: string, userId: number, description: string) => {
     try {
         const user = await db.users.findUnique({
             where: {
@@ -19,7 +19,8 @@ export const createGroup = async (name: string, userId: number) => {
         const newGroup = await db.groups.create({
             data: {
                 name,
-                userId
+                userId,
+                description,
             }
         });
 
