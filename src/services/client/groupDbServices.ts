@@ -50,13 +50,13 @@ export const createGroup = async (name: string, userId: number) => {
 
 export const getAllGroups = async (userId: number) => {
     try {
-        const groups = await db.groups.findMany({
+        const userGroups = await db.groupMembers.findMany({
             where: {
                 userId,
-            }
+            },
         });
 
-        if (!groups.length) {
+        if (userGroups.length === 0) {
             return {
                 success: true,
                 message: "هیچ گروهی نداری 💔",
@@ -65,21 +65,24 @@ export const getAllGroups = async (userId: number) => {
 
         const groupsArray = [];
 
-        for (const group of groups) {
+        for (const userGroup of userGroups) {
+            const group = await db.groups.findFirst({
+                where: {
+                    id: userGroup.groupId,
+                },
+            });
+
             const membersCount = await db.groupMembers.count({
                 where: {
-                    groupId: group.id,
+                    groupId: userGroup.groupId,
                 }
             });
 
-            const data = {
+            groupsArray.push({
                 group: group,
                 membersCount: membersCount,
-            }
-
-            groupsArray.push(data);
+            });
         }
-
 
         return {
             success: true,
