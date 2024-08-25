@@ -663,3 +663,76 @@ export const deleteRequest = async (requestId: string) => {
         }
     }
 }
+
+export const updateGroupAdmin = async (groupId: number, adminId: number, userPhone: string, isAdmin: boolean) => {
+    try {
+        const user = await db.users.findUnique({
+            where: {
+                phone: userPhone,
+            }
+        });
+
+        if (!user) {
+            return {
+                success: false,
+                message: "چنین کاربری نداریم 😔❌",
+            }
+        }
+
+        const actualGroupAdmin = await db.groups.findFirst({
+            where: {
+                userId: adminId,
+            }
+        });
+        if (!actualGroupAdmin) {
+            return {
+                success: false,
+                message: "شما صلاحیت لازم برای این کار رو نداری 🤐❌",
+            }
+        }
+
+        const member = await db.groupMembers.findFirst({
+            where: {
+                userId: user.id,
+                groupId,
+            }
+        });
+
+        if (!member) {
+            return {
+                success: false,
+                message: "چنین عضوی نداریم توی گروه 🤐❌",
+            }
+        }
+        if (member.isAdmin === isAdmin) {
+            return {
+                success: true,
+                message: "تغییرات از قبل اعمال شده❗",
+            }
+        }
+
+        await db.groupMembers.updateMany({
+            where: {
+                groupId,
+                userId: user.id,
+            },
+            data: {
+                isAdmin: isAdmin,
+            }
+        });
+
+        return {
+            success: true,
+            message: "با موفقیت وضعیت ادمینی رفیقت تغییر پیدا کرد 😎🎉",
+        }
+    } catch (error) {
+        logger.error(error, {
+            section: "updateGroupAdmin",
+        });
+
+        return {
+            success: false,
+            message: "خطا در تغییر وضعیت ادمینی ❌",
+        }
+    }
+}

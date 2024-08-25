@@ -2,7 +2,13 @@ import express from "express";
 import {protectUser} from "../../middlewares/auth";
 import {body, validationResult} from "express-validator";
 import {UserAuthenticatedReq} from "../../interfaces/AuthenticatedRequest";
-import {createGroup, getAllGroups, getGroupById, updateGroupDetails} from "../../services/client/groupDbServices";
+import {
+    createGroup,
+    getAllGroups,
+    getGroupById,
+    updateGroupAdmin,
+    updateGroupDetails
+} from "../../services/client/groupDbServices";
 
 const router = express.Router();
 
@@ -74,6 +80,41 @@ router.put('/update/:groupId', protectUser, body('name').isString(), body('desc'
    }
 
    const result = await updateGroupDetails(groupId, data.name, req.user.id, data.desc);
+   if (!result.success)
+       return res.status(400).json(result);
+
+   return res.json(result);
+});
+
+router.put('/update-admin/:groupId', protectUser, body('phoneNumber').isString(), body('isAdmin').isBoolean(), async (req:UserAuthenticatedReq, res) => {
+   const error = validationResult(req);
+   if (!error.isEmpty())
+       return res.status(400).json({error: error.array()});
+
+   const data = {
+       phoneNumber: req.body.phoneNumber,
+       isAdmin: req.body.isAdmin,
+       adminId: req.user.id,
+       groupId: Number(req.params.groupId)
+   }
+
+   data.phoneNumber = data.phoneNumber.replace("+98", "0");
+   if ((data.phoneNumber as string).startsWith("98")) {
+       data.phoneNumber = (data.phoneNumber as string).replace("98", "0");
+   }
+
+   if (isNaN(Number(data.phoneNumber)) || data.phoneNumber.length !== 11)
+       return res.status(400).json({
+           success: false,
+           message: "Phone number incorrect"
+       });
+   if (isNaN(data.groupId))
+       return res.status(400).json({
+           success: false,
+           message: "Group id must be an Number"
+       });
+
+   const result = await updateGroupAdmin(data.groupId, data.adminId, data.phoneNumber, data.isAdmin=== 'true' ? true:false);
    if (!result.success)
        return res.status(400).json(result);
 
