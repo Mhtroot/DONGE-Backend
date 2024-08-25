@@ -101,6 +101,65 @@ export const getAllGroups = async (userId: number) => {
     }
 }
 
+export const updateGroupDetails = async (groupId: number, name: string, userId: number, description: string) => {
+    try {
+        const user = await db.users.findUnique({
+            where: {
+                id: userId,
+            }
+        });
+
+        if (!user) {
+            return {
+                success: false,
+                message: "همچین کاربری نداریم 🤐❌",
+            }
+        }
+
+        const isAdmin = await db.groupMembers.findFirst({
+            where: {
+                groupId,
+                userId,
+            },
+            select: {
+                isAdmin: true,
+            }
+        });
+
+        if (!isAdmin.isAdmin) {
+            return {
+                success: false,
+                message: "ازونجایی که ادمین گروه نیستی نمیتونی اطلاعات گروه تغییر بدی 🤐❌",
+            }
+        }
+
+        const updateGroup = await db.groups.update({
+            where: {
+                id: groupId,
+            },
+            data: {
+                name,
+                description,
+            }
+        });
+
+        return {
+            success: true,
+            message: "اطلاعات گروهت با موفقیت آپدیت شد 😎✏",
+            updateGroup,
+        }
+    } catch (error) {
+        logger.error(error, {
+            section: "updateGroupDetails",
+        });
+
+        return {
+            success: false,
+            message: "خطا در بروز رسانی اطلاعات گروه ❌",
+        }
+    }
+}
+
 export const getGroupById = async (userId: number, groupId: number) => {
     try {
         const group = await db.groups.findUnique({

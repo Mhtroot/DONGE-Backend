@@ -2,7 +2,7 @@ import express from "express";
 import {protectUser} from "../../middlewares/auth";
 import {body, validationResult} from "express-validator";
 import {UserAuthenticatedReq} from "../../interfaces/AuthenticatedRequest";
-import {createGroup, getAllGroups, getGroupById} from "../../services/client/groupDbServices";
+import {createGroup, getAllGroups, getGroupById, updateGroupDetails} from "../../services/client/groupDbServices";
 
 const router = express.Router();
 
@@ -54,6 +54,30 @@ router.post("/create", protectUser, body('name').isString(), body('description')
         return res.status(400).json(result);
 
     return res.json(result);
+});
+
+router.put('/update/:groupId', protectUser, body('name').isString(), body('desc').isString(), async (req:UserAuthenticatedReq, res) => {
+   const error = validationResult(req);
+   if (!error.isEmpty())
+       return res.status(400).json({error: error.array()});
+
+   const groupId = Number(req.params.groupId);
+   if (isNaN(groupId))
+       return res.status(400).json({
+           success: false,
+           message: "Group id must be an Number"
+       });
+
+   const data = {
+       name: req.body.name,
+       desc: req.body.desc,
+   }
+
+   const result = await updateGroupDetails(groupId, data.name, req.user.id, data.desc);
+   if (!result.success)
+       return res.status(400).json(result);
+
+   return res.json(result);
 });
 
 export default router;
