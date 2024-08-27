@@ -595,7 +595,7 @@ export const joinGroupByReq = async (userId: number, reqId: string) => {
                 data: {
                     groupId: request[0].groupId,
                     isAdmin: false,
-                    userId,
+                    userId: request[0].userId,
                 }
             });
 
