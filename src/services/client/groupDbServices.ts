@@ -736,3 +736,121 @@ export const updateGroupAdmin = async (groupId: number, adminId: number, userPho
         }
     }
 }
+
+export const getGroupMembers = async (groupId: number, userId: number) => {
+    try {
+        const group = await db.groups.findFirst({
+            where: {
+                id: groupId,
+            }
+        });
+
+        if (!group) {
+            return {
+                success: false,
+                message: "چنین گروهی نداریم 💔",
+            }
+        }
+
+        const isUserInGroup = await db.groupMembers.findFirst({
+            where: {
+                groupId,
+                userId,
+            }
+        });
+        if (!isUserInGroup) {
+            return {
+                success: false,
+                message: "access denied",
+            }
+        }
+
+        const groupMembers = await db.groupMembers.findMany({
+            where: {
+                groupId,
+            }
+        });
+
+        return {
+            success: true,
+            groupMembers: groupMembers,
+        }
+    } catch (error) {
+        logger.error(error, {
+            section: "getGroupMembers",
+        });
+
+        return {
+            success: false,
+            message: "خطا در دریافت اعضای گروه ❌",
+        }
+    }
+}
+
+export const deleteGroupMember = async (userId: number, memberGroupId: number) => {
+    try {
+        const memberDetails = await db.groupMembers.findFirst({
+            where: {
+                id: memberGroupId,
+            }
+        });
+
+        const groupId = memberDetails.groupId;
+
+        const isUserAdmin = await db.groupMembers.findFirst({
+            where: {
+                userId,
+                groupId,
+            }
+        });
+        if (!isUserAdmin.isAdmin) {
+            return {
+                success: false,
+                message: "شما صلاحیت لازم برای این کار رو نداری 🤐❌",
+            }
+
+        }
+
+        const isUserGroupOwner = await db.groups.findFirst({
+            where: {
+                userId,
+                id: groupId,
+            }
+        });
+
+        if (!isUserGroupOwner) {
+            if (memberDetails.isAdmin) {
+                return {
+                    success: false,
+                    message: "کاربر ادمینه، برای اجرای عملیات باید مالک گروه اینکارو انجام بده"
+                }
+            }
+
+            await db.groupMembers.delete({
+                where: {
+                    id: memberGroupId,
+                }
+            });
+        }
+
+        await db.groupMembers.delete({
+            where: {
+                id: memberGroupId,
+            }
+        });
+
+        return {
+            success: true,
+            message: "کاربر مورد نظر باموفقیت از گروه حذف شد 🗑✅",
+        }
+    } catch (error) {
+        logger.error(error, {
+            section: "deleteGroupMember",
+        });
+
+        return {
+            success: false,
+            message: "خطا در حذف کاربر ❌"
+        }
+    }
+}

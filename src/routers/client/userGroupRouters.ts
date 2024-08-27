@@ -3,9 +3,9 @@ import {protectUser} from "../../middlewares/auth";
 import {body, validationResult} from "express-validator";
 import {UserAuthenticatedReq} from "../../interfaces/AuthenticatedRequest";
 import {
-    createGroup,
+    createGroup, deleteGroupMember,
     getAllGroups,
-    getGroupById,
+    getGroupById, getGroupMembers,
     updateGroupAdmin,
     updateGroupDetails
 } from "../../services/client/groupDbServices";
@@ -119,6 +119,36 @@ router.put('/update-admin/:groupId', protectUser, body('phoneNumber').isString()
        return res.status(400).json(result);
 
    return res.json(result);
+});
+
+router.get('/members/:id', protectUser, async (req:UserAuthenticatedReq, res) => {
+    const groupMemberId = Number(req.params.id);
+    if (isNaN(groupMemberId))
+        return res.status(400).json({
+            success: false,
+            message: "Group id must be an Number"
+        });
+
+    const result = await getGroupMembers(groupMemberId, req.user.id);
+    if (!result.success)
+        return res.status(400).json(result);
+
+    return res.json(result);
+});
+
+router.delete('/delete-member/:memberGroupId', protectUser, async (req:UserAuthenticatedReq, res) => {
+    const memberGroupId = Number(req.params.memberGroupId);
+    if (isNaN(memberGroupId))
+        return res.status(400).json({
+            success: false,
+            message: "Group id must be an Number"
+        });
+
+    const result = await deleteGroupMember(req.user.id, memberGroupId);
+    if (!result.success)
+        return res.status(400).json(result);
+
+    return res.json(result);
 });
 
 export default router;
