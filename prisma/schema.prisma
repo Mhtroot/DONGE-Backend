@@ -98,6 +98,8 @@ model payDues {
   description String
   groupId     Int?
   group       groups? @relation(fields: [groupId], references: [id])
+
+  isPaid Boolean @default(false)
 }
 
 model notifications {
