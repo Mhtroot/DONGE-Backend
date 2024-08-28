@@ -1,7 +1,7 @@
 import express from "express";
 import {protectUser} from "../../middlewares/auth";
 import {UserAuthenticatedReq} from "../../interfaces/AuthenticatedRequest";
-import {getPayDuesByGroupId} from "../../services/client/payDuesDbServices";
+import {getPayDuesByGroupId, getPayDuesByUserId} from "../../services/client/payDuesDbServices";
 
 const router = express.Router();
 
@@ -13,6 +13,16 @@ const router = express.Router();
 * edit the card, amount, almost everything
 * delete the record
 * */
+
+router.get('/', protectUser, async (req: UserAuthenticatedReq, res) =>{
+   const userId = req.user.id;
+
+   const result = await getPayDuesByUserId(userId);
+   if (!result.success)
+       return res.status(400).json(result);
+
+   return res.json(result);
+});
 
 router.get('/:groupId', protectUser, async (req: UserAuthenticatedReq, res) =>{
    const groupId = Number(req.params.groupId);
