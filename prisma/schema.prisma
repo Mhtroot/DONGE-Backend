@@ -51,6 +51,7 @@ model groups {
 
   groupMembers groupMembers[]
   groupRequest groupRequest[]
+  payDues      payDues[]
 }
 
 model groupMembers {
@@ -91,9 +92,12 @@ model payDues {
   amount   String
   currency String
 
-  cardId      String?
-  card        cards?  @relation(fields: [cardId], references: [id])
+  cardId String?
+  card   cards?  @relation(fields: [cardId], references: [id])
+
   description String
+  groupId     Int?
+  group       groups? @relation(fields: [groupId], references: [id])
 }
 
 model notifications {
