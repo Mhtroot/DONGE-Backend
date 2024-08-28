@@ -8,6 +8,7 @@ import userAuthRouters from "./routers/client/userAuthRouters";
 import userCardsRouters from "./routers/client/userCardsRouters";
 import userGroupRouters from "./routers/client/userGroupRouters";
 import userGroupRequestsRouters from "./routers/client/userGroupRequestsRouters";
+import userPayDuesRouters from "./routers/client/userPayDuesRouters";
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use("/user", userAuthRouters);
 app.use("/user/card", userCardsRouters);
 app.use("/group", userGroupRouters);
 app.use("/group-request", userGroupRequestsRouters);
+app.use("/pay-dues", userPayDuesRouters);
 
 const swaggerDocument = JSON.parse(fs.readFileSync(path.join(__dirname, 'swagger-output.json'), 'utf-8'));
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
