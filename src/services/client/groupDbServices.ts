@@ -165,11 +165,17 @@ export const getGroupById = async (userId: number, groupId: number) => {
         const group = await db.groups.findUnique({
             where: {
                 id: groupId,
+            }
+        });
+
+        const isUserJoined = await db.groupMembers.findFirst({
+            where: {
+                groupId,
                 userId,
             }
         });
 
-        if (!group) {
+        if (!group || !isUserJoined) {
             return {
                 success: false,
                 message: "چنین گروهی موجود نیست❌",
@@ -190,18 +196,9 @@ export const getGroupById = async (userId: number, groupId: number) => {
                     id: member.userId,
                 },
                 select: {
+                    id: true,
                     name: true,
                     phone: true,
-                }
-            });
-
-            const payDues = await db.payDues.findMany({
-                where: {
-                    groupId,
-                    OR: [
-                        {debtorId: user.id},
-                        {creditorId: user.id},
-                    ]
                 }
             });
 
@@ -209,7 +206,6 @@ export const getGroupById = async (userId: number, groupId: number) => {
                 user,
                 joinedAt: member.joinedAt,
                 isAdmin: member.isAdmin,
-                payDues,
             }
 
             membersDetails.push(data);
