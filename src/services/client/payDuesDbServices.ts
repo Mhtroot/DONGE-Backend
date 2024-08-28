@@ -58,8 +58,8 @@ export const getPayDuesByGroupId = async (groupId: number, userId:number) => {
 
             data.push({
                 payDue,
-                debtorName,
-                creditorName,
+                debtorName: debtorName.name,
+                creditorName: creditorName.name,
             })
         }
 
