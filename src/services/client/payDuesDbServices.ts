@@ -29,15 +29,43 @@ export const getPayDuesByGroupId = async (groupId: number, userId:number) => {
             }
         }
 
+        const data = [];
+
         const payDues = await db.payDues.findMany({
             where: {
                 groupId,
             }
         });
 
+        for (const payDue of payDues) {
+            const debtorName = await db.users.findFirst({
+                where: {
+                    id: payDue.debtorId,
+                },
+                select: {
+                    name: true,
+                }
+            });
+
+            const creditorName = await db.users.findFirst({
+                where: {
+                    id: payDue.creditorId,
+                },
+                select: {
+                    name: true,
+                }
+            });
+
+            data.push({
+                payDue,
+                debtorName,
+                creditorName,
+            })
+        }
+
         return {
             success: true,
-            data: payDues,
+            data,
         }
     } catch (error) {
         logger.error(error, {
