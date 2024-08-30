@@ -31,21 +31,6 @@ router.get('/sent', protectUser, async (req:UserAuthenticatedReq, res) => {
    return res.json(result);
 });
 
-router.get('/:id', protectUser, async (req:UserAuthenticatedReq, res) => {
-   const error = validationResult(req);
-   if (!error.isEmpty())
-       return res.status(400).json({error: error.array()});
-
-   const userId = req.user.id;
-   const reqId = req.params.id;
-
-   const result = await getRequestById(userId, reqId);
-   if (!result.success)
-       return res.status(400).json(result);
-
-   return res.json(result);
-});
-
 router.post('/create/:groupId', protectUser, body('memberPhoneNumber').isString(), async (req:UserAuthenticatedReq, res) => {
    const error = validationResult(req);
    if (!error.isEmpty())
