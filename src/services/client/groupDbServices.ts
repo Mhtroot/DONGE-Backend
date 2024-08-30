@@ -332,6 +332,7 @@ export const createAddMemberRequest = async (groupId: number, memberPhoneNumber:
             data: {
                 userId: user.id,
                 groupId,
+                senderId: groupAdminId,
             }
         });
 
@@ -666,7 +667,7 @@ export const joinGroupByReq = async (userId: number, reqId: string) => {
     }
 }
 
-export const deleteRequest = async (requestId: string) => {
+export const deleteRequest = async (requestId: string, userId: number) => {
     try {
         const groupReq = await db.groupRequest.findUnique({
             where: {
@@ -678,6 +679,19 @@ export const deleteRequest = async (requestId: string) => {
             return {
                 success: false,
                 message: "درخواست مورد نظر یافت نشد 😔💔",
+            }
+        }
+
+        const isSender = await db.groupRequest.findFirst({
+            where: {
+                id: requestId,
+                senderId: userId,
+            }
+        });
+        if (!isSender) {
+            return {
+                success: false,
+                message: "فرستنده درخواست فقط توانایی پاک کردن درخواست را دارد❌",
             }
         }
 

@@ -92,7 +92,7 @@ router.put('/update-status/:reqId', protectUser, body('status').isString(), asyn
 router.delete('/:requestId', protectUser, async (req: UserAuthenticatedReq, res) => {
    const reqId = req.params.requestId;
 
-   const result = await deleteRequest(reqId);
+   const result = await deleteRequest(reqId, req.user.id);
    if (!result.success)
        return res.status(400).json(result);
 
