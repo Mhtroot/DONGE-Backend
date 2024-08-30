@@ -803,10 +803,26 @@ export const getGroupMembers = async (groupId: number, userId: number) => {
                 groupId,
             }
         });
+        const data = [];
+        for (const groupMember of groupMembers) {
+            const user = await db.users.findFirst({
+                where: {
+                    id: groupMember.userId,
+                },
+                select: {
+                    name: true,
+                }
+            });
+
+            data.push({
+                name: user.name,
+                ...groupMember,
+            });
+        }
 
         return {
             success: true,
-            groupMembers: groupMembers,
+            groupMembers: data,
         }
     } catch (error) {
         logger.error(error, {
