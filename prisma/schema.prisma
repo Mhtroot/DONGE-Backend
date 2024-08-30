@@ -26,6 +26,8 @@ model users {
   payDuesCredits   payDues[]          @relation("payDuesCredits")
   notifications    notifications[]
   verificationCode verificationCode[]
+  senderUser       groupRequest[]     @relation("RequestSender")
+  reciverUser      groupRequest[]     @relation("RequestReciever")
 }
 
 model cards {
@@ -73,11 +75,16 @@ model groupRequest {
   groupId Int
   group   groups @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
-  userId Int?
-  user   users? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId      Int?
+  reciverUser users? @relation("RequestReciever", fields: [userId], references: [id], onDelete: SetNull)
+
+  senderId   Int?
+  senderUser users? @relation("RequestSender", fields: [senderId], references: [id])
 
   status    String   @default("pending")
   createdAt DateTime @default(now())
+  users     users?   @relation(fields: [usersId], references: [id])
+  usersId   Int?
 }
 
 model payDues {
