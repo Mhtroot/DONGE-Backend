@@ -268,6 +268,7 @@ export const getAllCards = async (userId: number) => {
                 userId: userId,
             },
             select: {
+                id: true,
                 cardPan: true,
                 cardName: true,
             },

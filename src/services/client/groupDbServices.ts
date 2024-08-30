@@ -299,6 +299,19 @@ export const createAddMemberRequest = async (groupId: number, memberPhoneNumber:
             }
         }
 
+        const isMember = await db.groupMembers.findFirst({
+            where: {
+                groupId,
+                userId: user.id,
+            }
+        });
+        if (isMember) {
+            return {
+                success: false,
+                message: "کاربر از قبل عضو گروه است ❗",
+            }
+        }
+
         const req = await db.groupRequest.findMany({
             where: {
                 groupId,
@@ -591,9 +604,22 @@ export const joinGroupByReq = async (userId: number, reqId: string) => {
         });
 
         if (!request) {
+
             return {
                 success: false,
                 message: "چنین درخواستی وجود ندارد 😔❌",
+            }
+        }
+        const isMember = await db.groupMembers.findFirst({
+            where: {
+                groupId: request[0].groupId,
+                userId: request[0].userId,
+            }
+        });
+        if (isMember) {
+            return {
+                success: false,
+                message: "کاربر از پیش عضو گروه است ❌",
             }
         }
 
