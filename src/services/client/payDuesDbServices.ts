@@ -174,6 +174,12 @@ export const createPayDue = async (
     currency: string, cardId: null | string, groupId: number, description: string
 ) => {
     try {
+        if (debtorId === creditorId) {
+            return {
+                success: false,
+                message: 'Value Error'
+            }
+        }
         const debtor = await db.users.findFirst({
             where: {
                 id: debtorId,
@@ -220,6 +226,22 @@ export const createPayDue = async (
                 cardId,
                 groupId,
                 description,
+            }
+        });
+        await db.users.update({
+            where: {
+                id: creditorId,
+            },
+            data: {
+                debts: creditor.debts + BigInt(amount),
+            }
+        });
+        await db.users.update({
+            where: {
+                id: debtorId,
+            },
+            data: {
+                owes: creditor.owes += BigInt(amount),
             }
         });
 
