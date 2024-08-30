@@ -168,3 +168,74 @@ export const getPayDuesByUserId = async (userId:number) => {
         }
     }
 }
+
+export const createPayDue = async (
+    debtorId: number, creditorId: number, amount: string,
+    currency: string, cardId: null | string, groupId: number, description: string
+) => {
+    try {
+        const debtor = await db.users.findFirst({
+            where: {
+                id: debtorId,
+            }
+        });
+        const creditor = await db.users.findFirst({
+            where: {
+                id: creditorId,
+            }
+        });
+
+        if (!debtor || !creditor) {
+            return {
+                success: false,
+                message: "کاربر یافت نشد ❌"
+            }
+        }
+
+        const isCreditorInGroup = await db.groupMembers.findFirst({
+            where: {
+                groupId,
+                userId: creditorId,
+            }
+        });
+        const isDebtorInGroup = await db.groupMembers.findFirst({
+            where: {
+                groupId,
+                userId: debtorId,
+            }
+        });
+        if (!isCreditorInGroup || !isDebtorInGroup) {
+            return {
+                success: false,
+                message: "کاربر مورد نظر در گروه عضو نیست 🤐❌",
+            }
+        }
+
+        const payDue = await db.payDues.create({
+            data: {
+                debtorId,
+                creditorId,
+                amount,
+                currency,
+                cardId,
+                groupId,
+                description,
+            }
+        });
+
+        return {
+            success: true,
+            message: "دونگ با موفقیت ثبت شد😎💳✅\nاز الان دوستات میتونن خرجی که کردی رو ببینن و حساب کنن باهات😎🎉",
+            data: payDue,
+        }
+    } catch (error) {
+        logger.error(error, {
+            section: "createPayDue",
+        });
+
+        return {
+            success: false,
+            message: "خطا در ایجاد دونگ 🤐❌"
+        }
+    }
+}

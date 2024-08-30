@@ -1,7 +1,8 @@
 import express from "express";
 import {protectUser} from "../../middlewares/auth";
 import {UserAuthenticatedReq} from "../../interfaces/AuthenticatedRequest";
-import {getPayDuesByGroupId, getPayDuesByUserId} from "../../services/client/payDuesDbServices";
+import {createPayDue, getPayDuesByGroupId, getPayDuesByUserId} from "../../services/client/payDuesDbServices";
+import {body, validationResult} from "express-validator";
 
 const router = express.Router();
 
@@ -37,6 +38,43 @@ router.get('/:groupId', protectUser, async (req: UserAuthenticatedReq, res) =>{
        return res.status(400).json(result);
 
    return res.json(result);
+});
+
+router.post
+("/create", protectUser,
+    body('debtorId').isNumeric(),
+    body('amount').isString(),
+    body('currency').isString(),
+    body('cardId').isString(),
+    body('groupId').isNumeric(),
+    body('description').isString(),
+    async (req: UserAuthenticatedReq, res) => {
+
+    const error = validationResult(req);
+    if (!error.isEmpty())
+        return res.status(400).json({ error: error.array() });
+
+    const data = {
+        creditorId: req.user.id,
+        debtorId: Number(req.body.debtorId),
+        groupId: Number(req.body.groupId),
+        amount: req.body.amount,
+        currency: req.body.currency,
+        cardId: req.body.cardId,
+        description: req.body.description
+    }
+
+    if (isNaN(data.debtorId) || isNaN(data.groupId))
+        return res.status(400).json({
+            success: false,
+            message: "Invalid debtor or group ID",
+        });
+
+    const result = await createPayDue(data.debtorId, data.creditorId, data.amount, data.currency, data.cardId, data.groupId, data.description);
+    if (!result.success)
+        return res.status(400).json(result);
+
+    return res.json(result);
 });
 
 export default router;
