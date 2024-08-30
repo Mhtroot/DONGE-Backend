@@ -630,7 +630,7 @@ export const joinGroupByReq = async (userId: number, reqId: string) => {
             }
         }
 
-        if (request[0].status === 'approved') {
+        if (request[0].status === 'approved' && request[0].userId === userId) {
             await db.groupMembers.create({
                 data: {
                     groupId: request[0].groupId,
