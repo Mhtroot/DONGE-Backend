@@ -481,34 +481,40 @@ export const getSentRequests = async (userId: number) => {
             }
         }
 
-        const groups = await db.groups.findMany({
+        const groupReqs = await db.groupRequest.findMany({
             where: {
-                userId: userId,
-            }
+                senderId: userId,
+            },
         });
-
-        if (groups.length === 0) {
-            return {
-                success: false,
-                message: "هیچ گروهی نداری 🤐❌"
-            }
-        }
 
         const groupRequestsData = [];
 
-        for (const group of groups) {
-            const sentGroupReqs = await db.groupRequest.findMany({
+        for (const request of groupReqs) {
+            const group = await db.groups.findFirst({
                 where: {
-                    groupId: group.id,
+                    id: request.groupId,
+                },
+                select: {
+                    name: true,
+                    description: true,
                 }
             });
 
-            const data = {
-                groupDetails: group,
-                requests: sentGroupReqs,
-            }
+            const user = await db.users.findFirst({
+                where: {
+                    id: request.userId,
+                },
+                select: {
+                    name: true,
+                    phone: true,
+                }
+            });
 
-            groupRequestsData.push(data);
+            groupRequestsData.push({
+                user,
+                group,
+                request,
+            });
         }
 
         return {
